@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symptom Checker Bot - House AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Add a header with the title -->
+        <div class="chat-header">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="House AI Logo" class="logo" style="width: 50px"><h1>House AI</h1>
+        </div>
+
+        <div class="chat-box" id="chat-box"></div>
+        <div class="user-input">
+            <input type="text" id="user-message" placeholder="Describe your symptoms..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Function to display a message
+        function displayMessage(message, sender) {
+            let chatBox = document.getElementById("chat-box");
+            let messageElement = document.createElement("div");
+            messageElement.classList.add(sender + '-message');
+            messageElement.textContent = message;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the latest message
+        }
+
+        // Function to send user input and get the bot's response
+        function sendMessage() {
+            let message = document.getElementById("user-message").value;
+            if (message.trim()) {  // Ensure non-empty message
+                displayMessage(message, 'user');  // Display user message
+
+                // Send the user message to the backend to get a response
+                fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    displayMessage(data.response, 'bot');  // Display bot response
+                    document.getElementById("user-message").value = '';  // Clear the input field
+                });
+            }
+        }
+
+        // Initialize with a greeting from the bot
+        window.onload = function() {
+            displayMessage("👋 Hello! I'm House AI, your Symptom Checker Bot. Please describe your symptoms and I'll assist you.", 'bot');
+        };
+
+        // Allow sending message with the 'Enter' key
+        document.getElementById("user-message").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
